@@ -1,0 +1,13 @@
+language: go
+
+script:
+  - go get github.com/ysmood/gokit/cmd/godev
+  - godev lint
+  - godev test --min 100
+
+cache:
+  directories:
+    - $HOME/gopath
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
