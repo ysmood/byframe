@@ -35,8 +35,8 @@ func ExampleScanner() {
 
 	for s.Scan() {
 		fmt.Println(string(s.Frame()))
-		// Output: test
 	}
+	// Output: test
 }
 
 func TestEncodeHeader20(t *testing.T) {

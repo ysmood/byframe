@@ -14,11 +14,11 @@ So you don't waste resource on the header itself when framing data.
 
 This lib also contains functions to only encode and decode the header,
 so you have the full flexibility to decide how to use it,
-such as TCP framing, database indexing, etc.
+such as streaming TCP frame, database indexing, etc.
 
 ## Format
 
-The data is byte stream, each frame has two parts the header and body.
+Each frame has two parts: the header and body.
 
 ```txt
 |     frame     |
