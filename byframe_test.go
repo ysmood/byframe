@@ -86,15 +86,16 @@ func TestScanner(t *testing.T) {
 }
 
 func TestScannerMultiFrames(t *testing.T) {
-	frame := byframe.Encode([]byte("test data"))
-	r := bytes.NewReader(append(frame, frame...))
+	frameA := byframe.Encode([]byte("test a"))
+	frameB := byframe.Encode([]byte("test b"))
+	r := bytes.NewReader(append(frameA, frameB...))
 	s := byframe.NewScanner(r)
 
 	list := [][]byte{}
 	for s.Scan() {
 		list = append(list, s.Frame())
 	}
-	assert.Equal(t, [][]byte{[]byte("test data"), []byte("test data")}, list)
+	assert.Equal(t, [][]byte{[]byte("test a"), []byte("test b")}, list)
 	assert.Nil(t, s.Err())
 }
 
