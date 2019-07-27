@@ -5,16 +5,14 @@
 
 It's a low overhead length header format with dynamic header length.
 So you don't waste resource on the header itself when framing data.
-
-- With 1 bytes of header it can describe the length of 128B.
-
-- With 5 bytes of header it can describe the length of 32GB.
-
-- No dependency
+The algorithm is based on LEB128.
 
 This lib also contains functions to only encode and decode the header,
 so you have the full flexibility to decide how to use it,
-such as streaming TCP frame, database indexing, etc.
+such as streaming TCP frames, indexing database, etc.
+
+This lib is not suit for high level usage, such extensible or debug friendly,
+it's better to use lib like FlatBuffers, Protobuf or Msagepack.
 
 ## Format
 

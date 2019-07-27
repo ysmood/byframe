@@ -3,12 +3,23 @@ package byframe_test
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/ysmood/byframe"
 )
+
+func ExampleScanner() {
+	frame := byframe.Encode([]byte("test"))
+	s := byframe.NewScanner(bytes.NewReader(frame))
+
+	for s.Scan() {
+		fmt.Println(string(s.Frame()))
+	}
+	// Output: test
+}
 
 func TestScanner(t *testing.T) {
 	frame := byframe.Encode([]byte("test data"))

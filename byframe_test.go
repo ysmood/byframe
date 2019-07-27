@@ -1,7 +1,6 @@
 package byframe_test
 
 import (
-	"bytes"
 	"fmt"
 	"testing"
 
@@ -21,19 +20,9 @@ func ExampleEncodeHeader() {
 func ExampleEncode() {
 	frame := byframe.Encode([]byte("test"))
 
-	data, _ := byframe.Decode(frame)
+	data, _, _ := byframe.Decode(frame)
 
 	fmt.Println(string(data))
-	// Output: test
-}
-
-func ExampleScanner() {
-	frame := byframe.Encode([]byte("test"))
-	s := byframe.NewScanner(bytes.NewReader(frame))
-
-	for s.Scan() {
-		fmt.Println(string(s.Frame()))
-	}
 	// Output: test
 }
 
@@ -49,19 +38,19 @@ func TestEncodeHeader200(t *testing.T) {
 
 func TestDecode(t *testing.T) {
 	frame := byframe.Encode([]byte("test data"))
-	data, err := byframe.Decode(frame)
+	data, _, err := byframe.Decode(frame)
 	assert.Nil(t, err)
 	assert.Equal(t, []byte("test data"), data)
 }
 
 func TestDecodeErrHeaderInsufficient(t *testing.T) {
 	frame := byframe.Encode([]byte{})
-	_, err := byframe.Decode(frame)
+	_, _, err := byframe.Decode(frame)
 	assert.Equal(t, byframe.ErrHeaderInsufficient, err)
 }
 
 func TestDecodeErrInsufficient(t *testing.T) {
-	_, err := byframe.Decode([]byte{10})
+	_, _, err := byframe.Decode([]byte{10})
 	assert.Equal(t, byframe.ErrInsufficient, err)
 }
 

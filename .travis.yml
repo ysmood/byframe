@@ -1,13 +1,8 @@
 language: go
 
 script:
-  - go get github.com/ysmood/gokit/cmd/godev
-  - godev lint
-  - godev test --min 100
-
-cache:
-  directories:
-    - $HOME/gopath
+  - curl -L https://git.io/fjaxx | repo=ysmood/gokit bin=godev sh
+  - godev -l -m100
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
