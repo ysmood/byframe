@@ -11,13 +11,10 @@ var ErrInsufficient = errors.New("data is not sufficient to construct the body")
 var ErrHeaderInsufficient = errors.New("data is not sufficient to construct the header")
 
 // EncodeHeader encode data length into header
-func EncodeHeader(l int) []byte {
-	header := []byte{}
-
+func EncodeHeader(l int) (header []byte) {
 	for l > 0 {
-		// 128 is 0b10000000
-		digit := l % 128
-		l = (l - digit) / 128
+		digit := l & 127
+		l >>= 7
 
 		if l > 0 {
 			header = append(header, byte(digit|128))
@@ -26,7 +23,7 @@ func EncodeHeader(l int) []byte {
 		}
 	}
 
-	return header
+	return
 }
 
 // DecodeHeader decode bytes into data length, header length and whether it's sufficient to
@@ -35,16 +32,17 @@ func DecodeHeader(raw []byte) (int, int, bool) {
 	rawLen := len(raw)
 	headerLen := 0
 	dataLen := 0
-	isContinue := true
 
-	for isContinue {
+	for {
 		if headerLen == rawLen {
 			return headerLen, dataLen, false
 		}
 		digit := int(raw[headerLen])
-		isContinue = (digit & 128) == 128                   // 128 is 0b10000000
-		dataLen += (digit & 127) * (1 << uint(headerLen*7)) // 127 is 0b01111111
+		dataLen |= (digit & 127) << (uint(headerLen) * 7)
 		headerLen++
+		if (digit & 128) == 0 {
+			break
+		}
 	}
 	return dataLen, headerLen, true
 }
@@ -55,14 +53,15 @@ func Encode(data []byte) []byte {
 	return append(header, data...)
 }
 
-// Decode decode frame into data
-func Decode(data []byte) ([]byte, error) {
+// Decode decode frame into data, decoded bytes and error
+func Decode(data []byte) ([]byte, int, error) {
 	dataLen, headerLen, sufficient := DecodeHeader(data)
 	if !sufficient {
-		return nil, ErrHeaderInsufficient
+		return nil, 0, ErrHeaderInsufficient
 	}
-	if len(data) < headerLen+dataLen {
-		return nil, ErrInsufficient
+	n := headerLen + dataLen
+	if len(data) < n {
+		return nil, 0, ErrInsufficient
 	}
-	return data[headerLen : headerLen+dataLen], nil
+	return data[headerLen:n], n, nil
 }
