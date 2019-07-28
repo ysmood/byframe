@@ -12,6 +12,10 @@ var ErrHeaderInsufficient = errors.New("data is not sufficient to construct the 
 
 // EncodeHeader encode data length into header
 func EncodeHeader(l int) (header []byte) {
+	if l == 0 {
+		return []byte{0}
+	}
+
 	for l > 0 {
 		digit := l & 127
 		l >>= 7
@@ -34,7 +38,7 @@ func DecodeHeader(raw []byte) (int, int, bool) {
 	dataLen := 0
 
 	for {
-		if headerLen == rawLen {
+		if headerLen >= rawLen {
 			return headerLen, dataLen, false
 		}
 		digit := int(raw[headerLen])

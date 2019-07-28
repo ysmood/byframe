@@ -26,6 +26,11 @@ func ExampleEncode() {
 	// Output: test
 }
 
+func TestEncodeHeader0(t *testing.T) {
+	h := byframe.EncodeHeader(0)
+	assert.Equal(t, []byte{0}, h)
+}
+
 func TestEncodeHeader20(t *testing.T) {
 	h := byframe.EncodeHeader(20)
 	assert.Equal(t, []byte{20}, h)
@@ -44,8 +49,7 @@ func TestDecode(t *testing.T) {
 }
 
 func TestDecodeErrHeaderInsufficient(t *testing.T) {
-	frame := byframe.Encode([]byte{})
-	_, _, err := byframe.Decode(frame)
+	_, _, err := byframe.Decode([]byte{128})
 	assert.Equal(t, byframe.ErrHeaderInsufficient, err)
 }
 
