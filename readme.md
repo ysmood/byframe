@@ -7,11 +7,11 @@ It's a low overhead length header format with dynamic header length.
 So you don't waste resource on the header itself when framing data.
 The algorithm is based on LEB128.
 
-This lib also contains functions to only encode and decode the header,
+This lib also contains functions to encode and decode the header,
 so you have the full flexibility to decide how to use it,
 such as streaming TCP frames, indexing database, etc.
 
-This lib is not suit for high level usage, such extensible or debug friendly,
+This lib is not suit for high level usage, for extensible or debugging friendly
 it's better to use lib like FlatBuffers, Protobuf or Msagepack.
 
 ## Format
@@ -28,8 +28,8 @@ Each frame has two parts: the header and body.
 Each byte (8 bits) in the header has two parts, "continue" and "fraction":
 
 ```txt
-byte index |    0     | 1 2 3 4 5 6 7 |
-sections   | continue |   fraction    |
+bit index |    0     | 1 2 3 4 5 6 7 |
+sections  | continue |   fraction    |
 ```
 
 If the "continue" is 0, the header ends.
