@@ -46,6 +46,16 @@ func TestScannerMultiFrames(t *testing.T) {
 	assert.Nil(t, s.Err())
 }
 
+func TestScannerLimit(t *testing.T) {
+	frame := byframe.Encode([]byte("test data test data"))
+	r := bytes.NewReader(frame)
+	s := byframe.NewScanner(r).Limit(10)
+
+	assert.Panics(t, func() {
+		s.Scan()
+	})
+}
+
 type MultiRead struct {
 	i            int
 	returnedZero bool

@@ -4,6 +4,8 @@ import "io"
 
 // Scanner scan frames based on the length header
 type Scanner struct {
+	limit int
+
 	r          io.Reader
 	frame      []byte
 	dataLen    int
@@ -23,6 +25,12 @@ func NewScanner(r io.Reader) *Scanner {
 		sufficient: false,
 		buf:        []byte{},
 	}
+}
+
+// Limit of frame buffer, panic if exceeds. Zero means no limit.
+func (s *Scanner) Limit(size int) *Scanner {
+	s.limit = size
+	return s
 }
 
 func (s *Scanner) read() bool {
@@ -51,6 +59,7 @@ func (s *Scanner) Scan() bool {
 		if !s.read() {
 			return false
 		}
+		s.checkLimit()
 	}
 
 	for {
@@ -69,6 +78,7 @@ func (s *Scanner) Scan() bool {
 		if !s.read() {
 			return false
 		}
+		s.checkLimit()
 	}
 }
 
@@ -83,4 +93,10 @@ func (s *Scanner) Err() error {
 		return nil
 	}
 	return s.err
+}
+
+func (s *Scanner) checkLimit() {
+	if s.limit != 0 && len(s.buf) > s.limit {
+		panic("[byframe] exceeded the limit")
+	}
 }
