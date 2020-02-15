@@ -1,7 +1,6 @@
 # byframe
 
-[![GoDoc](https://godoc.org/github.com/ysmood/byframe?status.svg)](http://godoc.org/github.com/ysmood/byframe)
-[![Build Status](https://travis-ci.org/ysmood/byframe.svg?branch=master)](https://travis-ci.org/ysmood/byframe)
+[![GoDoc](https://godoc.org/github.com/ysmood/byframe?status.svg)](https://pkg.go.dev/github.com/ysmood/byframe?tab=doc)
 
 It's a low overhead length header format with dynamic header length.
 So you don't waste resource on the header itself when framing data.
