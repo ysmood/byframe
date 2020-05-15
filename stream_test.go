@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/ysmood/byframe"
+	"github.com/ysmood/byframe/v2"
 )
 
 func ExampleScanner() {
