@@ -1,17 +1,14 @@
-# byframe
+# Overview
 
 [![GoDoc](https://godoc.org/github.com/ysmood/byframe?status.svg)](https://pkg.go.dev/github.com/ysmood/byframe?tab=doc)
 
 It's a low overhead length header format with dynamic header length.
-So you don't waste resource on the header itself when framing data.
+So we don't waste resources on the header itself when framing data.
 The algorithm is based on LEB128.
 
 This lib also contains functions to encode and decode the header,
 so you have the full flexibility to decide how to use it,
 such as streaming TCP frames, indexing database, etc.
-
-This lib is not suit for high level usage, for extensible or debugging friendly
-it's better to use lib like FlatBuffers, Protobuf or Msagepack.
 
 ## Format
 

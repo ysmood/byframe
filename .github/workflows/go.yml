@@ -8,14 +8,14 @@ jobs:
 
     steps:
 
-    - uses: actions/setup-go@v1
+    - uses: actions/setup-go@v2
       with:
-        go-version: 1.13
+        go-version: 1.14
 
     - uses: actions/checkout@v1
 
     - name: setup
-      run: curl -L https://git.io/fjaxx | repo=ysmood/kit bin=godev sh
+      run: go get github.com/ysmood/kit/cmd/godev
  
     - name: test
-      run: godev -l
+      run: godev -lm 100

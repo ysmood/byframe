@@ -18,9 +18,24 @@ func ExampleEncodeHeader() {
 }
 
 func ExampleEncode() {
-	frame := byframe.Encode([]byte("test"))
+	type User struct {
+		Name string
+		Age  int
+	}
 
-	data, _, _ := byframe.Decode(frame)
+	data, _ := byframe.Encode(User{"Ann", 10})
+
+	var decoded User
+	_ = byframe.Decode(data, &decoded)
+
+	fmt.Println(decoded)
+	// Output: {Ann 10}
+}
+
+func ExampleEncodeBytes() {
+	frame := byframe.EncodeBytes([]byte("test"))
+
+	data, _, _ := byframe.DecodeBytes(frame)
 
 	fmt.Println(string(data))
 	// Output: test
@@ -42,19 +57,19 @@ func TestEncodeHeader200(t *testing.T) {
 }
 
 func TestDecode(t *testing.T) {
-	frame := byframe.Encode([]byte("test data"))
-	data, _, err := byframe.Decode(frame)
+	frame := byframe.EncodeBytes([]byte("test data"))
+	data, _, err := byframe.DecodeBytes(frame)
 	assert.Nil(t, err)
 	assert.Equal(t, []byte("test data"), data)
 }
 
 func TestDecodeErrHeaderInsufficient(t *testing.T) {
-	_, _, err := byframe.Decode([]byte{128})
+	_, _, err := byframe.DecodeBytes([]byte{128})
 	assert.Equal(t, byframe.ErrHeaderInsufficient, err)
 }
 
 func TestDecodeErrInsufficient(t *testing.T) {
-	_, _, err := byframe.Decode([]byte{10})
+	_, _, err := byframe.DecodeBytes([]byte{10})
 	assert.Equal(t, byframe.ErrInsufficient, err)
 }
 
@@ -63,4 +78,15 @@ func TestHeaderInsufficient(t *testing.T) {
 	assert.Equal(t, 1, h)
 	assert.Equal(t, 7, l)
 	assert.Equal(t, false, s)
+}
+
+func TestErr(t *testing.T) {
+	_, err := byframe.Encode(nil)
+	assert.Error(t, err)
+
+	err = byframe.Decode(nil, nil)
+	assert.Error(t, err)
+
+	err = byframe.Decode(byframe.EncodeBytes([]byte{}), nil)
+	assert.Error(t, err)
 }

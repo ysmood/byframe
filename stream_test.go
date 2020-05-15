@@ -12,7 +12,7 @@ import (
 )
 
 func ExampleScanner() {
-	frame := byframe.Encode([]byte("test"))
+	frame := byframe.EncodeBytes([]byte("test"))
 	s := byframe.NewScanner(bytes.NewReader(frame))
 
 	for s.Scan() {
@@ -22,7 +22,7 @@ func ExampleScanner() {
 }
 
 func TestScanner(t *testing.T) {
-	frame := byframe.Encode([]byte("test data"))
+	frame := byframe.EncodeBytes([]byte("test data"))
 	r := bytes.NewReader(frame)
 	s := byframe.NewScanner(r)
 
@@ -33,8 +33,8 @@ func TestScanner(t *testing.T) {
 }
 
 func TestScannerMultiFrames(t *testing.T) {
-	frameA := byframe.Encode([]byte("test a"))
-	frameB := byframe.Encode([]byte("test b"))
+	frameA := byframe.EncodeBytes([]byte("test a"))
+	frameB := byframe.EncodeBytes([]byte("test b"))
 	r := bytes.NewReader(append(frameA, frameB...))
 	s := byframe.NewScanner(r)
 
@@ -47,7 +47,7 @@ func TestScannerMultiFrames(t *testing.T) {
 }
 
 func TestScannerLimit(t *testing.T) {
-	frame := byframe.Encode([]byte("test data test data"))
+	frame := byframe.EncodeBytes([]byte("test data test data"))
 	r := bytes.NewReader(frame)
 	s := byframe.NewScanner(r).Limit(10)
 
@@ -79,7 +79,7 @@ func (mr *MultiRead) Read(buf []byte) (int, error) {
 }
 
 func TestScannerMultiRead(t *testing.T) {
-	frame := byframe.Encode([]byte("test data"))
+	frame := byframe.EncodeBytes([]byte("test data"))
 
 	s := byframe.NewScanner(&MultiRead{i: 0, frame: frame})
 

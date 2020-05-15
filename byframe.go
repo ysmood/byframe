@@ -1,6 +1,8 @@
 package byframe
 
 import (
+	"bytes"
+	"encoding/gob"
 	"errors"
 )
 
@@ -51,14 +53,14 @@ func DecodeHeader(raw []byte) (int, int, bool) {
 	return dataLen, headerLen, true
 }
 
-// Encode encode data into frame format
-func Encode(data []byte) []byte {
+// EncodeBytes encode data into frame format
+func EncodeBytes(data []byte) []byte {
 	header := EncodeHeader(len(data))
 	return append(header, data...)
 }
 
-// Decode decode frame into data, decoded bytes and error
-func Decode(data []byte) ([]byte, int, error) {
+// DecodeBytes decode frame into data, decoded bytes and error
+func DecodeBytes(data []byte) ([]byte, int, error) {
 	dataLen, headerLen, sufficient := DecodeHeader(data)
 	if !sufficient {
 		return nil, 0, ErrHeaderInsufficient
@@ -68,4 +70,30 @@ func Decode(data []byte) ([]byte, int, error) {
 		return nil, 0, ErrInsufficient
 	}
 	return data[headerLen:n], n, nil
+}
+
+// Encode arbitrary value
+func Encode(value interface{}) ([]byte, error) {
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	err := enc.Encode(value)
+	if err != nil {
+		return nil, err
+	}
+	return EncodeBytes(buf.Bytes()), nil
+}
+
+// Decode bytes into arbitrary value
+func Decode(data []byte, val interface{}) error {
+	var buf bytes.Buffer
+	dec := gob.NewDecoder(&buf)
+
+	frame, _, err := DecodeBytes(data)
+	if err != nil {
+		return err
+	}
+
+	_, _ = buf.Write(frame)
+
+	return dec.Decode(val)
 }
