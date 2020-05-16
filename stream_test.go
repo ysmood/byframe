@@ -12,13 +12,30 @@ import (
 )
 
 func ExampleScanner() {
-	frame := byframe.EncodeBytes([]byte("test"))
-	s := byframe.NewScanner(bytes.NewReader(frame))
+	type User struct {
+		Name string
+		Age  int
+	}
+
+	var buf bytes.Buffer
+
+	frame, _ := byframe.Encode(User{"Ann", 10})
+	buf.Write(frame)
+
+	frame, _ = byframe.Encode(User{"Lee", 12})
+	buf.Write(frame)
+
+	s := byframe.NewScanner(&buf)
 
 	for s.Scan() {
-		fmt.Println(string(s.Frame()))
+		var user User
+		_ = s.Decode(&user)
+		fmt.Println(user)
 	}
-	// Output: test
+
+	// Output:
+	// {Ann 10}
+	// {Lee 12}
 }
 
 func TestScanner(t *testing.T) {

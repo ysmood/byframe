@@ -84,7 +84,7 @@ func Encode(value interface{}) ([]byte, error) {
 }
 
 // Decode bytes into arbitrary value
-func Decode(data []byte, val interface{}) error {
+func Decode(data []byte, value interface{}) error {
 	var buf bytes.Buffer
 	dec := gob.NewDecoder(&buf)
 
@@ -95,5 +95,5 @@ func Decode(data []byte, val interface{}) error {
 
 	_, _ = buf.Write(frame)
 
-	return dec.Decode(val)
+	return dec.Decode(value)
 }

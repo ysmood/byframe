@@ -14,6 +14,7 @@ func ExampleEncodeHeader() {
 	dataLen, headerLen, sufficient := byframe.DecodeHeader(header)
 
 	fmt.Println(headerLen, dataLen, sufficient)
+
 	// Output: 2 1000 true
 }
 
@@ -29,6 +30,7 @@ func ExampleEncode() {
 	_ = byframe.Decode(data, &decoded)
 
 	fmt.Println(decoded)
+
 	// Output: {Ann 10}
 }
 
@@ -38,6 +40,7 @@ func ExampleEncodeBytes() {
 	data, _, _ := byframe.DecodeBytes(frame)
 
 	fmt.Println(string(data))
+
 	// Output: test
 }
 

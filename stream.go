@@ -1,6 +1,10 @@
 package byframe
 
-import "io"
+import (
+	"bytes"
+	"encoding/gob"
+	"io"
+)
 
 // Scanner scan frames based on the length header
 type Scanner struct {
@@ -85,6 +89,16 @@ func (s *Scanner) Scan() bool {
 // Frame current frame
 func (s *Scanner) Frame() []byte {
 	return s.frame
+}
+
+// Decode frame into value
+func (s *Scanner) Decode(value interface{}) error {
+	var buf bytes.Buffer
+	dec := gob.NewDecoder(&buf)
+
+	_, _ = buf.Write(s.frame)
+
+	return dec.Decode(value)
 }
 
 // Err the error
