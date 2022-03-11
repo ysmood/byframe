@@ -1,16 +1,24 @@
 package byframe
 
 import (
-	"bytes"
-	"encoding/gob"
 	"errors"
 )
 
-// ErrInsufficient ...
-var ErrInsufficient = errors.New("data is not sufficient to construct the body")
+const (
+	maskContinue = 0b1000_0000
+	maskfraction = 0b0111_1111
+)
 
-// ErrHeaderInsufficient ...
-var ErrHeaderInsufficient = errors.New("data is not sufficient to construct the header")
+var (
+	// ErrInsufficient ...
+	ErrInsufficient = errors.New("[byframe] data is not sufficient to construct the body")
+
+	// ErrHeaderInsufficient ...
+	ErrHeaderInsufficient = errors.New("[byframe] data is not sufficient to construct the header")
+
+	// ErrHeaderTooLarge ...
+	ErrHeaderTooLarge = errors.New("[byframe] header is too long")
+)
 
 // EncodeHeader encode data length into header
 func EncodeHeader(l int) (header []byte) {
@@ -19,7 +27,7 @@ func EncodeHeader(l int) (header []byte) {
 	}
 
 	for l > 0 {
-		digit := l & 127
+		digit := l & maskfraction
 		l >>= 7
 
 		if l > 0 {
@@ -32,68 +40,51 @@ func EncodeHeader(l int) (header []byte) {
 	return
 }
 
-// DecodeHeader decode bytes into data length, header length and whether it's sufficient to
-// parse the header from raw.
-func DecodeHeader(raw []byte) (int, int, bool) {
-	rawLen := len(raw)
-	headerLen := 0
-	dataLen := 0
-
-	for {
-		if headerLen >= rawLen {
-			return headerLen, dataLen, false
+// HeaderLength decodes the length of the header.
+// Returns zero if the raw is not sufficient.
+// It will return -1 if the header length is too large.
+func HeaderLength(raw []byte) int {
+	for i, b := range raw {
+		if i > 8 {
+			return -1
 		}
-		digit := int(raw[headerLen])
-		dataLen |= (digit & 127) << (uint(headerLen) * 7)
-		headerLen++
-		if (digit & 128) == 0 {
-			break
+		if b&maskContinue == 0 {
+			return i + 1
 		}
 	}
-	return dataLen, headerLen, true
+	return 0
 }
 
-// EncodeBytes encode data into frame format
-func EncodeBytes(data []byte) []byte {
+// DecodeHeader decode bytes into header length and data length.
+func DecodeHeader(raw []byte) (header int, data int) {
+	header = HeaderLength(raw)
+	for i := 0; i < header; i++ {
+		digit := int(raw[i])
+		data |= (digit & maskfraction) << (i * 7)
+	}
+	return
+}
+
+// Encode encode data into frame format
+func Encode(data []byte) []byte {
 	header := EncodeHeader(len(data))
 	return append(header, data...)
 }
 
-// DecodeBytes decode frame into data, decoded bytes and error
-func DecodeBytes(data []byte) ([]byte, int, error) {
-	dataLen, headerLen, sufficient := DecodeHeader(data)
-	if !sufficient {
-		return nil, 0, ErrHeaderInsufficient
-	}
-	n := headerLen + dataLen
-	if len(data) < n {
-		return nil, 0, ErrInsufficient
-	}
-	return data[headerLen:n], n, nil
-}
-
-// Encode arbitrary value
-func Encode(value interface{}) ([]byte, error) {
-	var buf bytes.Buffer
-	enc := gob.NewEncoder(&buf)
-	err := enc.Encode(value)
-	if err != nil {
-		return nil, err
-	}
-	return EncodeBytes(buf.Bytes()), nil
-}
-
-// Decode bytes into arbitrary value
-func Decode(data []byte, value interface{}) error {
-	var buf bytes.Buffer
-	dec := gob.NewDecoder(&buf)
-
-	frame, _, err := DecodeBytes(data)
-	if err != nil {
-		return err
+// Decode decode frame into data, decoded bytes and error
+func Decode(data []byte) ([]byte, error) {
+	headerLen, dataLen := DecodeHeader(data)
+	if headerLen > 0 {
+		n := headerLen + int(dataLen)
+		if len(data) < n {
+			return nil, ErrInsufficient
+		}
+		return data[headerLen:n], nil
 	}
 
-	_, _ = buf.Write(frame)
+	if headerLen == 0 {
+		return nil, ErrHeaderInsufficient
+	}
 
-	return dec.Decode(value)
+	return nil, ErrHeaderTooLarge
 }

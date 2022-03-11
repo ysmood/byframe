@@ -4,7 +4,7 @@
 
 It's a low overhead length header format with dynamic header length.
 So we don't waste resources on the header itself when framing data.
-The algorithm is based on LEB128.
+The algorithm is based on [LEB128](https://en.wikipedia.org/wiki/LEB128).
 
 This lib also contains functions to encode and decode the header,
 so you have the full flexibility to decide how to use it,

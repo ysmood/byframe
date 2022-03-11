@@ -1,5 +1,5 @@
-module github.com/ysmood/byframe/v2
+module github.com/ysmood/byframe/v3
 
-go 1.14
+go 1.17
 
-require github.com/stretchr/testify v1.3.0
+require github.com/ysmood/got v0.15.3

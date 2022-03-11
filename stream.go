@@ -1,116 +1,88 @@
 package byframe
 
 import (
-	"bytes"
-	"encoding/gob"
+	"fmt"
 	"io"
 )
 
+// ErrLimitExceeded ...
+var ErrLimitExceeded = fmt.Errorf("[byframe] exceeded the limit")
+
 // Scanner scan frames based on the length header
 type Scanner struct {
-	limit int
-
-	r          io.Reader
-	frame      []byte
-	dataLen    int
-	headerLen  int
-	sufficient bool
-	buf        []byte
-	err        error
+	limit   int
+	r       io.Reader
+	frame   []byte
+	buf     []byte
+	readBuf []byte
+	err     error
 }
 
 // NewScanner just like line scanner
 func NewScanner(r io.Reader) *Scanner {
 	return &Scanner{
-		r:          r,
-		frame:      []byte{},
-		dataLen:    0,
-		headerLen:  0,
-		sufficient: false,
-		buf:        []byte{},
+		limit:   1024 * 1024 * 1024,
+		r:       r,
+		buf:     []byte{},
+		readBuf: make([]byte, 64*1024),
 	}
 }
 
-// Limit of frame buffer, panic if exceeds. Zero means no limit.
+// Limit of frame size, default is 1GB
 func (s *Scanner) Limit(size int) *Scanner {
 	s.limit = size
 	return s
 }
 
-func (s *Scanner) read() bool {
-	buf := make([]byte, 1024)
-	n, err := s.r.Read(buf)
-	s.buf = append(s.buf, buf[:n]...)
-	if err != nil {
-		s.err = err
-		return false
-	}
-	return true
+// BufferSize of the buffer for read, default is 64KB
+func (s *Scanner) BufferSize(size int) *Scanner {
+	s.readBuf = make([]byte, size)
+	return s
 }
 
-// Scan scan next frame
+// Scan scan next frame, returns true to continue the scan
 func (s *Scanner) Scan() bool {
+	headerDone := false
+	headerLen := 0
+	dataLen := 0
+
 	for {
-		dl, hl, sufficient := DecodeHeader(s.buf[s.headerLen:])
-		s.dataLen += dl
-		s.headerLen += hl
-		s.sufficient = sufficient
-
-		if sufficient {
-			break
-		}
-
-		if !s.read() {
+		if len(s.buf) > s.limit {
+			s.err = ErrLimitExceeded
 			return false
 		}
-		s.checkLimit()
-	}
 
-	for {
-		if len(s.buf) >= s.headerLen+s.dataLen {
-			s.frame = s.buf[s.headerLen : s.headerLen+s.dataLen]
+		if !headerDone {
+			headerLen, dataLen = DecodeHeader(s.buf)
+			if headerLen > 0 {
+				headerDone = true
+			} else if headerLen < 0 {
+				s.err = ErrHeaderTooLarge
+				return false
+			}
+		}
 
-			// reset
-			s.buf = s.buf[s.headerLen+s.dataLen:]
-			s.dataLen = 0
-			s.headerLen = 0
-			s.sufficient = false
-
+		if headerDone && len(s.buf) >= headerLen+dataLen {
+			s.frame = s.buf[headerLen : headerLen+dataLen]
+			s.buf = s.buf[headerLen+dataLen:]
 			return true
 		}
 
-		if !s.read() {
+		n, err := s.r.Read(s.readBuf)
+		if err != nil {
+			s.err = err
 			return false
 		}
-		s.checkLimit()
+		s.buf = append(s.buf, s.readBuf[:n]...)
 	}
 }
 
-// Frame current frame
+// Frame returns the current frame
 func (s *Scanner) Frame() []byte {
 	return s.frame
 }
 
-// Decode frame into value
-func (s *Scanner) Decode(value interface{}) error {
-	var buf bytes.Buffer
-	dec := gob.NewDecoder(&buf)
-
-	_, _ = buf.Write(s.frame)
-
-	return dec.Decode(value)
-}
-
-// Err the error
+// Err returns error if errors happen while scanning
 func (s *Scanner) Err() error {
-	if s.err == io.EOF {
-		return nil
-	}
 	return s.err
-}
-
-func (s *Scanner) checkLimit() {
-	if s.limit != 0 && len(s.buf) > s.limit {
-		panic("[byframe] exceeded the limit")
-	}
 }
