@@ -1,3 +1,4 @@
+// Package byframe provides a simple framing protocol for streaming data.
 package byframe
 
 import (

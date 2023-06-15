@@ -41,6 +41,16 @@ func (t T) Scanner() {
 	}
 }
 
+func (t T) ScannerNext() {
+	frame := byframe.Encode([]byte("test data"))
+	r := bytes.NewReader(frame)
+	s := byframe.NewScanner(r)
+
+	b, err := s.Next()
+	t.E(err)
+	t.Eq([]byte("test data"), b)
+}
+
 func (t T) ScannerMultiFrames() {
 	frameA := byframe.Encode([]byte("test a"))
 	frameB := byframe.Encode([]byte("test b"))
@@ -60,6 +70,7 @@ func (t T) ScannerOptions() {
 	s := byframe.NewScanner(r).Limit(10).BufferSize(1)
 
 	for s.Scan() {
+		nop()
 	}
 	t.Eq(s.Err(), byframe.ErrLimitExceeded)
 }
@@ -69,6 +80,7 @@ func (t T) ScannerLargeHeaderErr() {
 	s := byframe.NewScanner(r)
 
 	for s.Scan() {
+		nop()
 	}
 	t.Eq(s.Err(), byframe.ErrHeaderTooLarge)
 }
@@ -109,7 +121,7 @@ func (t T) ScannerMultiRead() {
 type ErrRead struct {
 }
 
-func (mr *ErrRead) Read(buf []byte) (int, error) {
+func (mr *ErrRead) Read([]byte) (int, error) {
 	return 0, errors.New("err")
 }
 
@@ -142,3 +154,5 @@ func (t T) StreamMonkey() {
 		t.True(bytes.Equal(s.Frame(), item))
 	}
 }
+
+func nop() {}

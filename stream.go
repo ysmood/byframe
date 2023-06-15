@@ -40,6 +40,14 @@ func (s *Scanner) BufferSize(size int) *Scanner {
 	return s
 }
 
+// Next scan next frame, returns error if errors happen while scanning
+func (s *Scanner) Next() ([]byte, error) {
+	if !s.Scan() {
+		return nil, s.Err()
+	}
+	return s.Frame(), nil
+}
+
 // Scan scan next frame, returns true to continue the scan
 func (s *Scanner) Scan() bool {
 	headerDone := false
