@@ -49,6 +49,8 @@ func (t T) ScannerNext() {
 	b, err := s.Next()
 	t.E(err)
 	t.Eq([]byte("test data"), b)
+
+	t.Err(s.Next())
 }
 
 func (t T) ScannerMultiFrames() {
