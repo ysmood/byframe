@@ -1,4 +1,4 @@
-module github.com/ysmood/byframe/v3
+module github.com/ysmood/byframe/v4
 
 go 1.17
 

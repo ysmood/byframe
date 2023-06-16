@@ -6,7 +6,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/ysmood/byframe/v3"
+	"github.com/ysmood/byframe/v4"
 	"github.com/ysmood/got"
 )
 

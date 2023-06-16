@@ -8,7 +8,7 @@ import (
 	"math/rand"
 	"strings"
 
-	"github.com/ysmood/byframe/v3"
+	"github.com/ysmood/byframe/v4"
 )
 
 func ExampleScanner() {
@@ -69,7 +69,7 @@ func (t T) ScannerMultiFrames() {
 func (t T) ScannerOptions() {
 	frame := byframe.Encode([]byte("test data test data"))
 	r := bytes.NewReader(frame)
-	s := byframe.NewScanner(r).Limit(10).BufferSize(1)
+	s := byframe.NewScanner(r).Limit(10)
 
 	for s.Scan() {
 		nop()
