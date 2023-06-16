@@ -1,7 +1,5 @@
 # Overview
 
-[![GoDoc](https://godoc.org/github.com/ysmood/byframe?status.svg)](https://pkg.go.dev/github.com/ysmood/byframe?tab=doc)
-
 It's a low overhead length header format with dynamic header length.
 So we don't waste resources on the header itself when framing data.
 The algorithm is based on [LEB128](https://en.wikipedia.org/wiki/LEB128).
